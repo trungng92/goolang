@@ -1,0 +1,9 @@
+#!/bin/bash
+FILENAME=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 32)
+go build -o $FILENAME ./...
+RET_VAL=$?
+if [ -a $FILENAME ]
+then
+	rm $FILENAME
+fi
+exit $RET_VAL
