@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+echo 'testing compilation.'
+./githooks/pre-commit-hooks/test-compilation
+echo 'running small tests.'
+./githooks/pre-commit-hooks/run-small-tests
+echo 'running formatter.'
+./githooks/pre-commit-hooks/run-formatter
+

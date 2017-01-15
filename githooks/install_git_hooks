@@ -1,0 +1,12 @@
+#!/bin/bash
+HOOK_FILE=../.git/hooks/pre-commit
+if ! [ -a $HOOK_FILE ]
+then
+	cp pre-commit-hooks/pre-commit $HOOK_FILE
+	echo "Successfully installed pre-commit file."
+else
+	echo "git pre-commit file exists. Automatic hook installation failed."
+	echo "Copy contents of pre-commit-hooks/pre-commit into the git pre-commit file,"
+	echo "Or call pre-commit-hooks/pre-commit from the git pre-commit file."
+	exit 1
+fi
