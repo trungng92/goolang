@@ -1,12 +1,24 @@
 #!/bin/bash
+
+# Gets the name of the current directory name
+# because we want to run this script from the githooks folder
+# The user could technically create their own folder called githooks
+# and call this script from there, but I can't see any reason why they would do that...
+CURRENT_DIRECTORY=${PWD##*/}
+if [ "$CURRENT_DIRECTORY" != 'githooks' ]
+then
+	echo "Error: Install script needs to be ran from githooks directory, but was ran from $PWD."
+	exit 1
+fi
+
 HOOK_FILE=../.git/hooks/pre-commit
 if ! [ -a $HOOK_FILE ]
 then
 	cp pre-commit-hooks/pre-commit $HOOK_FILE
 	echo "Successfully installed pre-commit file."
 else
-	echo "git pre-commit file exists. Automatic hook installation failed."
+	echo "Error: git pre-commit file exists. Automatic hook installation failed."
 	echo "Copy contents of pre-commit-hooks/pre-commit into the git pre-commit file,"
 	echo "Or call pre-commit-hooks/pre-commit from the git pre-commit file."
-	exit 1
+	exit 2
 fi
