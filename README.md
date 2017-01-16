@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/trungng92/goolang.svg?branch=master)](https://travis-ci.org/trungng92/goolang)
+
 I created this just to test using git's pre-commit hook to help make better commits.
 
 Basically, whenever you do a commit, git will run tests, check compilations, or run anything you want.
