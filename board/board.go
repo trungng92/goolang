@@ -1,5 +1,7 @@
 package board
 
+import "github.com/trungng92/goolang/util"
+
 // For now have 2 players, although this number shouldn't need to change
 var player1 = Player{}
 var player2 = Player{}
@@ -8,28 +10,34 @@ var PlayerNeutral = Player{}
 // Board contains all the squares/pieces,
 // and it's what the player plays on.
 type Board struct {
-	Field [][]Square
+	Field []Square
+	size  util.Vector2
 }
 
-func NewBoard(dimX, dimY int) Board {
-	var field = make([][]Square, dimY)
-	for y := 0; y < dimY; y++ {
-		field[y] = make([]Square, dimX)
-		for x := 0; x < dimX; x++ {
-			field[y][x] = Square{PlayerNeutral}
-		}
+func NewBoard(size util.Vector2) Board {
+	field := make([]Square, size.X*size.Y)
+	for i := 0; i < len(field); i++ {
+		field[i] = Square{PlayerNeutral}
 	}
 	return Board{
 		Field: field,
+		size:  size,
 	}
 }
 
-func (b *Board) GetSquare(dimX, dimY int) Square {
-	return b.Field[dimY][dimX]
+func (b Board) IsValidCoordinate(coor util.Vector2) bool {
+	return coor.X >= 0 &&
+		coor.X < b.size.X &&
+		coor.Y >= 0 &&
+		coor.Y < b.size.Y
 }
 
-func (b *Board) FillSquare(player Player, dimX, dimY int) {
-	var square = b.Field[dimY][dimX]
+func (b *Board) GetSquare(coor util.Vector2) *Square {
+	return &b.Field[util.VecToIndex(coor, b.size.X)]
+}
+
+func (b *Board) FillSquare(player Player, coor util.Vector2) {
+	square := b.Field[util.VecToIndex(coor, b.size.X)]
 	square.FillWith(player)
 	// TODO: log that a board square was filled
 	// and fire off an event
@@ -39,25 +47,67 @@ func (b *Board) FillSquare(player Player, dimX, dimY int) {
 // fillTrappedSquares takes the squares that are trapped (unreachable by other players)
 // and fills them in with the player who trapped the squares
 func (b *Board) FillTrappedSquares(players []Player) {
-	// TODO: Implement
+	checkedBoard := make([]bool, len(b.Field))
+	for i := 0; i < len(checkedBoard); i++ {
+		if !checkedBoard[i] {
+			checkNext := util.QueueVector2{}
+			playersReached := make(map[Player]struct{})
+			b.recursivelyFindTrappedSquares(&checkedBoard, &checkNext, &playersReached)
+		}
+	}
+}
+
+// recursivelyFindTrappeSquares starts with a square and searches surrounding squares to see if all the squares connected are trapped.
+// After no more squares can be reached, if only one player can be reached,
+// then we use the stack to determine all the nodes to be awarded to that player.
+func (b *Board) recursivelyFindTrappedSquares(checkedBoard *[]bool, checkNext *util.QueueVector2, playersReached *map[Player]struct{}) {
+	if checkNext.Len() == 0 {
+		return
+	}
+	current := checkNext.Pop()
+	(*checkedBoard)[util.VecToIndex(current, b.size.X)] = true
+
+	// just naiively check in 8 directions to find unchecked squares
+	// this array and the vectors in it are allocated on the stack, so it shouldn't be that expensive
+	toCheck := [...]util.Vector2{
+		util.Vector2{-1, -1}, util.Vector2{-1, 0}, util.Vector2{-1, 1},
+		util.Vector2{0, -1}, util.Vector2{0, 1},
+		util.Vector2{1, -1}, util.Vector2{1, 0}, util.Vector2{1, 1},
+	}
+	for i := 0; i < len(toCheck); i++ {
+		next := current
+		next.Add(toCheck[i])
+		if b.IsValidCoordinate(next) {
+			square := b.GetSquare(next)
+			// we only need to check squares that aren't owned by a player
+			if !square.OwnedBy(PlayerNeutral) {
+				(*playersReached)[square.Owner] = struct{}{}
+			} else if !(*checkedBoard)[util.VecToIndex(next, b.size.X)] {
+				checkNext.Push(next)
+			}
+		}
+	}
+
+	b.recursivelyFindTrappedSquares(checkedBoard, checkNext, playersReached)
+	if len(*playersReached) == 1 {
+		for k := range *playersReached {
+			b.GetSquare(current).FillWith(k)
+		}
+	}
 }
 
 type Square struct {
-	owner Player
+	Owner Player
 }
 
 func (s Square) OwnedBy(player Player) bool {
-	return s.owner == player
+	return s.Owner == player
 }
 
 func (s *Square) FillWith(player Player) {
-	s.SetOwner(player)
+	s.Owner = player
 	// TODO: log that a square was filled
 	// and fire off an event
-}
-
-func (s *Square) SetOwner(player Player) {
-	s.owner = player
 }
 
 type Player struct {

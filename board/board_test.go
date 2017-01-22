@@ -3,6 +3,8 @@ package board
 import "testing"
 import assert "gopkg.in/go-playground/assert.v1"
 
+import "github.com/trungng92/goolang/util"
+
 func TestFillSquare(t *testing.T) {
 	var square = Square{PlayerNeutral}
 	assert.Equal(t, square.OwnedBy(PlayerNeutral), true)
@@ -11,24 +13,22 @@ func TestFillSquare(t *testing.T) {
 	assert.Equal(t, square.OwnedBy(playerTest), true)
 }
 
-func TestFillBoard(t *testing.T) {
+// fill the whole board one square at a time
+func TestFillBoardBySquare(t *testing.T) {
 	var dimX, dimY = 2, 2
-	var gameBoard = NewBoard(dimX, dimY)
-	for y := 0; y < dimY; y++ {
-		for x := 0; x < dimX; x++ {
-			var square = gameBoard.GetSquare(x, y)
-			assert.Equal(t, square.OwnedBy(PlayerNeutral), true)
-		}
+	var size = util.Vector2{dimX, dimY}
+	var gameBoard = NewBoard(size)
+	for i := 0; i < len(gameBoard.Field); i++ {
+		var square = gameBoard.GetSquare(util.IndexToVec(i, dimX))
+		assert.Equal(t, square.OwnedBy(PlayerNeutral), true)
 	}
 
 	var playerTest Player
-	gameBoard.FillSquare(playerTest, 0, 0)
-	for y := 0; y < dimY; y++ {
-		for x := 0; x < dimX; x++ {
-			gameBoard.FillSquare(playerTest, x, y)
-			var square = gameBoard.GetSquare(x, y)
-			assert.Equal(t, square.OwnedBy(playerTest), true)
-			assert.Equal(t, square.OwnedBy(PlayerNeutral), true)
-		}
+	for i := 0; i < len(gameBoard.Field); i++ {
+		var coor = util.IndexToVec(i, dimX)
+		gameBoard.FillSquare(playerTest, coor)
+		var square = gameBoard.GetSquare(coor)
+		assert.Equal(t, square.OwnedBy(playerTest), true)
+		assert.Equal(t, square.OwnedBy(PlayerNeutral), true)
 	}
 }
