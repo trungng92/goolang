@@ -5,7 +5,7 @@ import "github.com/trungng92/goolang/util"
 // For now have 2 players, although this number shouldn't need to change
 var player1 = Player{}
 var player2 = Player{}
-var PlayerNeutral = Player{}
+var PlayerNeutral = Player{"N"}
 
 // Board contains all the squares/pieces,
 // and it's what the player plays on.
@@ -37,8 +37,7 @@ func (b *Board) GetSquare(coor util.Vector2) *Square {
 }
 
 func (b *Board) FillSquare(player Player, coor util.Vector2) {
-	square := b.Field[util.VecToIndex(coor, b.size.X)]
-	square.FillWith(player)
+	b.GetSquare(coor).FillWith(player)
 	// TODO: log that a board square was filled
 	// and fire off an event
 	// possibly redundant with square being filled event
@@ -49,8 +48,11 @@ func (b *Board) FillSquare(player Player, coor util.Vector2) {
 func (b *Board) FillTrappedSquares(players []Player) {
 	checkedBoard := make([]bool, len(b.Field))
 	for i := 0; i < len(checkedBoard); i++ {
-		if !checkedBoard[i] {
-			checkNext := util.QueueVector2{}
+		println("iterating board item ", i)
+		vec := util.IndexToVec(i, b.size.X)
+		if !checkedBoard[i] && b.GetSquare(vec).Owner == PlayerNeutral {
+			println("checking unchecked item ", i)
+			checkNext := util.QueueVector2{util.IndexToVec(i, b.size.X)}
 			playersReached := make(map[Player]struct{})
 			b.recursivelyFindTrappedSquares(&checkedBoard, &checkNext, &playersReached)
 		}
@@ -65,6 +67,7 @@ func (b *Board) recursivelyFindTrappedSquares(checkedBoard *[]bool, checkNext *u
 		return
 	}
 	current := checkNext.Pop()
+	println("Currently checking ", current.X, ", ", current.Y)
 	(*checkedBoard)[util.VecToIndex(current, b.size.X)] = true
 
 	// just naiively check in 8 directions to find unchecked squares
@@ -81,18 +84,33 @@ func (b *Board) recursivelyFindTrappedSquares(checkedBoard *[]bool, checkNext *u
 			square := b.GetSquare(next)
 			// we only need to check squares that aren't owned by a player
 			if !square.OwnedBy(PlayerNeutral) {
+				println("Found square ", next.X, ", ", next.Y, " is owned by ", square.Owner.name)
 				(*playersReached)[square.Owner] = struct{}{}
+				(*checkedBoard)[util.VecToIndex(next, b.size.X)] = true
 			} else if !(*checkedBoard)[util.VecToIndex(next, b.size.X)] {
+				println("Found square ", next.X, ", ", next.Y, " is neutral. adding to check.")
 				checkNext.Push(next)
 			}
 		}
 	}
 
 	b.recursivelyFindTrappedSquares(checkedBoard, checkNext, playersReached)
+	println("Players reached: ", len(*playersReached))
 	if len(*playersReached) == 1 {
 		for k := range *playersReached {
 			b.GetSquare(current).FillWith(k)
+			println("Filling ", current.X, ", ", current.Y, " with ", k.name)
 		}
+	}
+}
+
+func (b Board) Print() {
+	for i := 0; i < b.size.Y; i++ {
+		for j := 0; j < b.size.X; j++ {
+			coor := util.Vector2{j, i}
+			print(b.GetSquare(coor).Owner.name)
+		}
+		println()
 	}
 }
 
