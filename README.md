@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/trungng92/goolang.svg?branch=master)](https://travis-ci.org/trungng92/goolang)
 
+This is a simple cross between the games [JezzBall](http://www.jezzball.us/) and [Dots](https://en.wikipedia.org/wiki/Dots_(game)). Basically you and your opponent alternate selecting squares (you can only select squares that are adjacent to one you've previously selected), and when you trap any squares (i.e. the square is unreachable by your opponent), all of those square are awarded to you. And the goal of the game is to own more squares than your opponent when the board is completely filled.
+
 I created this just to test using git's pre-commit hook to help make better commits.
 
 Basically, whenever you do a commit, git will run tests, check compilations, or run anything you want.
