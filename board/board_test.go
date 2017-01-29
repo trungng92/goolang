@@ -25,7 +25,7 @@ func TestFillBoardBySquare(t *testing.T) {
 		gameBoard.FillSquare(playerTest, coor)
 		square := gameBoard.GetSquare(coor)
 		assert.Equal(t, square.OwnedBy(playerTest), true)
-		assert.Equal(t, square.OwnedBy(PlayerNeutral), true)
+		assert.Equal(t, square.OwnedBy(PlayerNeutral), false)
 	}
 }
 
@@ -63,7 +63,15 @@ func TestTrappingSquares(t *testing.T) {
 	}
 
 	gameBoard.FillTrappedSquares(players)
-	gameBoard.Print()
+	finalBoard := []Player{
+		player1, player1, player2,
+		player1, player1, PlayerNeutral,
+		player1, player1, PlayerNeutral,
+	}
+	for i, owner := range finalBoard {
+		vec := util.IndexToVec(i, dimX)
+		assert.Equal(t, gameBoard.GetSquare(vec).Owner, owner)
+	}
 }
 
 func createEmptyBoard(size util.Vector2) Board {

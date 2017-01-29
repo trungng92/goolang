@@ -48,10 +48,8 @@ func (b *Board) FillSquare(player Player, coor util.Vector2) {
 func (b *Board) FillTrappedSquares(players []Player) {
 	checkedBoard := make([]bool, len(b.Field))
 	for i := 0; i < len(checkedBoard); i++ {
-		println("iterating board item ", i)
 		vec := util.IndexToVec(i, b.size.X)
 		if !checkedBoard[i] && b.GetSquare(vec).Owner == PlayerNeutral {
-			println("checking unchecked item ", i)
 			checkNext := util.QueueVector2{util.IndexToVec(i, b.size.X)}
 			playersReached := make(map[Player]struct{})
 			b.recursivelyFindTrappedSquares(&checkedBoard, &checkNext, &playersReached)
@@ -67,7 +65,6 @@ func (b *Board) recursivelyFindTrappedSquares(checkedBoard *[]bool, checkNext *u
 		return
 	}
 	current := checkNext.Pop()
-	println("Currently checking ", current.X, ", ", current.Y)
 	(*checkedBoard)[util.VecToIndex(current, b.size.X)] = true
 
 	// just naiively check in 8 directions to find unchecked squares
@@ -84,22 +81,18 @@ func (b *Board) recursivelyFindTrappedSquares(checkedBoard *[]bool, checkNext *u
 			square := b.GetSquare(next)
 			// we only need to check squares that aren't owned by a player
 			if !square.OwnedBy(PlayerNeutral) {
-				println("Found square ", next.X, ", ", next.Y, " is owned by ", square.Owner.name)
 				(*playersReached)[square.Owner] = struct{}{}
 				(*checkedBoard)[util.VecToIndex(next, b.size.X)] = true
 			} else if !(*checkedBoard)[util.VecToIndex(next, b.size.X)] {
-				println("Found square ", next.X, ", ", next.Y, " is neutral. adding to check.")
 				checkNext.Push(next)
 			}
 		}
 	}
 
 	b.recursivelyFindTrappedSquares(checkedBoard, checkNext, playersReached)
-	println("Players reached: ", len(*playersReached))
 	if len(*playersReached) == 1 {
 		for k := range *playersReached {
 			b.GetSquare(current).FillWith(k)
-			println("Filling ", current.X, ", ", current.Y, " with ", k.name)
 		}
 	}
 }
