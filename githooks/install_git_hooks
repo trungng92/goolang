@@ -18,7 +18,7 @@ then
 	echo "Successfully installed pre-commit file."
 else
 	echo "Error: git pre-commit file exists. Automatic hook installation failed."
-	echo "Copy contents of pre-commit-hooks/pre-commit into the git pre-commit file,"
+	echo "Copy contents of pre-commit-hooks/pre-commit into the git pre-commit file $HOOK_FILE,"
 	echo "Or call pre-commit-hooks/pre-commit from the git pre-commit file."
 	exit 2
 fi

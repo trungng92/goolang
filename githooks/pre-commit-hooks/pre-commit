@@ -1,10 +1,12 @@
 #!/bin/bash
-
+# If this file gets updated, you will need to rerun the install_git_hooks script
 set -e
 echo 'testing compilation.'
 ./githooks/pre-commit-hooks/test-compilation
 echo 'running small tests.'
 ./githooks/pre-commit-hooks/run-small-tests
+echo 'running small tests on untracked changes.'
+./githooks/pre-commit-hooks/test-staged
 echo 'running formatter.'
 ./githooks/pre-commit-hooks/run-formatter
 

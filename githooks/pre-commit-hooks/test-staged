@@ -1,0 +1,22 @@
+#!/bin/sh
+# Tests only the tracked changes
+
+MESSAGE="Stashing any unstaged/untracked code to run tests"
+echo $MESSAGE
+
+OLD_STASH=$(git rev-parse -q --verify refs/stash)
+git stash save -q -k -u "$MESSAGE"
+NEW_STASH=$(git rev-parse -q --verify refs/stash)
+
+# Run the actual tests
+./githooks/pre-commit-hooks/run-small-tests
+EXIT_CODE=$?
+
+if [ "$OLD_STASH" != "$NEW_STASH" ]; then
+    echo "Popping stashed changes"
+    git stash pop -q
+else
+    echo "No unstaged/untracked changes detected to pop"
+fi
+
+exit $EXIT_CODE
