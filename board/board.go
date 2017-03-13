@@ -2,7 +2,8 @@ package board
 
 import "github.com/trungng92/goolang/util"
 
-// For now have 2 players, although this number shouldn't need to change
+// For now have 2 test players
+// but the number of players will be determined dynamically
 var player1 = Player{}
 var player2 = Player{}
 var PlayerNeutral = Player{"N"}
@@ -23,6 +24,10 @@ func NewBoard(size util.Vector2) Board {
 		Field: field,
 		size:  size,
 	}
+}
+
+func (b Board) GetSize() util.Vector2 {
+	return b.size
 }
 
 func (b Board) IsValidCoordinate(coor util.Vector2) bool {
@@ -97,11 +102,20 @@ func (b *Board) recursivelyFindTrappedSquares(checkedBoard *[]bool, checkNext *u
 	}
 }
 
+func (b Board) Copy(other Board) {
+	for i := 0; i < b.size.Y; i++ {
+		for j := 0; j < b.size.X; j++ {
+			coor := util.Vector2{j, i}
+			b.GetSquare(coor).FillWith(other.GetSquare(coor).Owner)
+		}
+	}
+}
+
 func (b Board) Print() {
 	for i := 0; i < b.size.Y; i++ {
 		for j := 0; j < b.size.X; j++ {
 			coor := util.Vector2{j, i}
-			print(b.GetSquare(coor).Owner.name)
+			print(b.GetSquare(coor).Owner.Name)
 		}
 		println()
 	}
@@ -122,5 +136,5 @@ func (s *Square) FillWith(player Player) {
 }
 
 type Player struct {
-	name string
+	Name string
 }
